@@ -18,9 +18,13 @@ public class CustomResponseErrorHandler implements ResponseErrorHandler {
     }
 
     @Override
-    public void handleError(URI url, HttpMethod method, ClientHttpResponse response) throws IOException {
+    public void handleError(ClientHttpResponse response) throws IOException {
         HttpStatus statusCode = (HttpStatus) response.getStatusCode();
-        throw new ApiException("Request to " + url + " with method " + method +
-                " failed with status code: " + statusCode.value());
+        String body = new String(response.getBody().readAllBytes());
+
+        throw new ApiException(
+                "HTTP request failed with status code " + statusCode.value() +
+                        " (" + statusCode.getReasonPhrase() + "). Response body: " + body
+        );
     }
 }

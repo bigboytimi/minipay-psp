@@ -16,4 +16,6 @@ public class RegistrationRequest {
     private String email;
     @NotBlank(message = "role must not be empty")
     private RoleEnum role;
+    @NotBlank(message = "merchantId must not be empty")
+    private String merchantId;
 }

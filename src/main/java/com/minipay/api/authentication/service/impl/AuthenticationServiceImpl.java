@@ -14,6 +14,8 @@ import com.minipay.api.authentication.repository.RoleRepository;
 import com.minipay.api.authentication.repository.UserRepository;
 import com.minipay.api.authentication.repository.UserRoleRepository;
 import com.minipay.api.authentication.service.AuthenticationService;
+import com.minipay.api.merchant.domain.Merchant;
+import com.minipay.api.merchant.service.MerchantService;
 import com.minipay.common.ApiResponse;
 import com.minipay.common.ResponseCode;
 import com.minipay.exception.ApiException;
@@ -47,6 +49,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final UserRoleRepository userRoleRepository;
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+    private final MerchantService merchantService;
 
     @Override
     public LoginResponse login(LoginRequest request) {
@@ -97,12 +100,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new ApiException("Email or username already exists", ResponseCode.DUPLICATE.getCode());
         }
 
+        Merchant merchant = merchantService.getMerchantById(request.getMerchantId());
         String defaultPassword = SecurityUtil.generatePassword(10, 15, true);
 
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setStatus(UserStatus.ACTIVE);
+        user.setMerchant(merchant);
 
         user.setPasswordHash(passwordEncoder.encode(defaultPassword));
 
