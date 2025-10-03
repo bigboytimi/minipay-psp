@@ -18,6 +18,9 @@ public abstract class ApiConstants {
     public static final String MERCHANTS_WITH_ID = "/merchants/{merchantId}";
     public static final String MERCHANT_CHARGE_SETTINGS = "/merchants/{merchantId}/charge-settings";
     public static final String PAYMENTS = "/payments";
+
+    public static final String PAYMENTS_APPROVE = "/payments/{paymentRef}";
+
     public static final String PAYMENT_WITH_REFERENCE = "/payments/{paymentRef}";
     public static final String PROCESSOR_CALLBACK = "/simulate/processor-callback";
     public static final String SETTLEMENTS_GENERATE = "/settlements/generate";

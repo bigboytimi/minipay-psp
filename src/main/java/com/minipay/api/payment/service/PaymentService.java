@@ -20,6 +20,7 @@ import java.util.List;
 
 public interface PaymentService {
     PaymentResponse payment(InitiatePaymentRequest request);
+    PaymentResponse approvePayment(String paymentRef, boolean success);
 
     void save(Payment payment);
 
