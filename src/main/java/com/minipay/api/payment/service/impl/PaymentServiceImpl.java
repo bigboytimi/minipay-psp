@@ -26,6 +26,7 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -49,6 +50,12 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResponse payment(InitiatePaymentRequest request) {
+
+        Optional<Payment> existing = paymentRepository.findByOrderId(request.getOrderId());
+        if (existing.isPresent()) {
+            Payment payment = existing.get();
+            return toResponse(payment);
+        }
 
         Merchant merchant = merchantService.getMerchantById(request.getCustomerId());
 

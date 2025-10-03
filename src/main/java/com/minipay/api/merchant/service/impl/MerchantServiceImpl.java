@@ -96,27 +96,41 @@ public class MerchantServiceImpl implements MerchantService {
         Merchant merchant = merchantRepository.findById(merchantId)
                 .orElseThrow(()-> new ApiException("merchant not found"));
 
+        boolean updated = false;
+
         try{
             if (StringUtils.hasText(request.getMerchantEmail())){
                 merchant.setEmail(request.getMerchantEmail());
+                updated = true;
             }
 
             if (StringUtils.hasText(request.getMerchantName())){
                 merchant.setName(request.getMerchantName());
+                updated = true;
             }
 
             if (StringUtils.hasText(request.getSettlementBank())){
                 merchant.setSettlementBank(request.getSettlementBank());
+                updated = true;
             }
 
             if (StringUtils.hasText(request.getSettlementAccount())){
                 merchant.setSettlementAccount(request.getSettlementAccount());
+                updated = true;
             }
 
             if (StringUtils.hasText(request.getCallbackUrl())){
                 merchant.setCallBackUrl(request.getCallbackUrl());
+                updated = true;
             }
 
+            if (!updated){
+                throw new ApiException("Nothing to update");
+            }
+
+
+            //inactive until update is approved or denied by checker
+            merchant.setStatus(UserStatus.INACTIVE);
             Merchant updatedMerchant = merchantRepository.save(merchant);
 
             return buildMerchantResponse(updatedMerchant, null);
