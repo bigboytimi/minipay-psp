@@ -44,7 +44,7 @@ public class MerchantOnboardingController {
 
     @PostMapping(value = MERCHANTS_APPROVAL)
     @PreAuthorize("hasRole('CHECKER')")
-    @Operation(summary = "Update Merchant", description = "Updates merchant status")
+    @Operation(summary = "Update Merchant Status", description = "Updates merchant status")
     public ResponseEntity<ApiResponse<MerchantStatusUpdateResponse>> statusUpdate(@PathVariable String id, @RequestBody @Valid MerchantStatusUpdateRequest statusUpdateRequest) {
         log.info("approving merchant status update...");
         MerchantStatusUpdateResponse statusUpdateResponse = merchantService.statusUpdate(id, statusUpdateRequest);
