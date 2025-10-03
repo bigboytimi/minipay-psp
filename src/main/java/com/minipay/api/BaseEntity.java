@@ -35,10 +35,6 @@ public abstract class BaseEntity {
         }
     }
 
-    public void updateTimestamp() {
-        this.updatedAt = LocalDateTime.now();
-    }
-
     private String generateRandomId() {
         return RandomGenerator.generateRandomNumber(10);
     }
