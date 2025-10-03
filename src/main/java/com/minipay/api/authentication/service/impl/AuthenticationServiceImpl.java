@@ -42,11 +42,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+    private final LoginAttemptService loginAttemptService;
 
 
     @Override
     public LoginResponse login(LoginRequest request) {
         log.info("initiating user login...");
+        String key = request.getUsername();
+        if (loginAttemptService.isBlocked(key)) {
+            throw new ApiException("Too many failed attempts. Try again later.");
+        }
 
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new ApiException("User does not exist"));
@@ -57,8 +62,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             log.info("user input invalid password");
+            loginAttemptService.loginFailed(key);
             throw new ApiException("Invalid credentials");
         }
+
+        loginAttemptService.loginSucceeded(key);
 
         UserDetails userDetails = new CustomUserDetails(user);
 

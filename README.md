@@ -317,7 +317,7 @@ public class WebhookController {
 - **Domain-Driven Design**: Monolith for simplicity/speed; assume <10k reqs/day. Easy to split later.
 - **DB: PostgreSQL**: JSONB support for flexible fees; assumptions: High read/write, ACID needed for finances.
 - **Fee Calc**: Done at payment approval; assumes processor fees known/simulated. Caps applied post-percentage.
-- **Settlement: Daily Batches**: Generated manually via API; assume cronjob in prod. Groups by merchant/date.
+- **Settlement: Daily Batches**: Generated manually via API and cronjob in case of prod. Groups by merchant/date.
 - **Simulation**: No real processors; assume success/fail via callback for testing.
 - **Error Handling**: Global @ControllerAdvice; assumptions: Idempotent payments (retry on fail).
 - **Currency**: Assumes NGN; extend for multi-currency.
@@ -348,5 +348,3 @@ public class WebhookController {
     - Settlements: `CREATE INDEX idx_settlement_date ON settlements(settlement_date);`
     - Merchants: `CREATE INDEX idx_merchant_name ON merchants(name);` (searches)
 - **Notes**: Assume 10k payments/day; use EXPLAIN ANALYZE for queries. Exports stream to avoid OOM (ByteArrayResource). Monitor with Actuator/Prometheus in prod.
-
-For issues, open a GitHub issue. Contributions welcome!
