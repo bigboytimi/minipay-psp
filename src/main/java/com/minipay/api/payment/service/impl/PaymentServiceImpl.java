@@ -126,9 +126,9 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public void save(Payment payment) {
+    public Payment save(Payment payment) {
         try {
-            paymentRepository.save(payment);
+            return paymentRepository.save(payment);
         } catch (Exception e) {
             throw new ApiException(e.getMessage());
         }

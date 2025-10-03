@@ -22,7 +22,7 @@ public interface PaymentService {
     PaymentResponse payment(InitiatePaymentRequest request);
     PaymentResponse approvePayment(String paymentRef, boolean success);
 
-    void save(Payment payment);
+    Payment save(Payment payment);
 
     PaymentResponse fetch(String paymentRef);
 
