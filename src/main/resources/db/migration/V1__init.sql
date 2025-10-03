@@ -158,6 +158,7 @@ create table if not exists user_role_tbl
         primary key
 );
 
+-- USER TABLE
 create table if not exists user_tbl
 (
     id            varchar(50)  not null
@@ -177,6 +178,13 @@ create table if not exists user_tbl
     created_at    timestamp(6),
     updated_at    timestamp(6)
 );
+
+INSERT INTO role_tbl (id, role_name, created_at,updated_at)
+VALUES
+    (gen_random_uuid(), 'ADMIN', current_timestamp,current_timestamp),
+    (gen_random_uuid(), 'MAKER',current_timestamp,current_timestamp),
+    (gen_random_uuid(), 'CHECKER', current_timestamp, current_timestamp),
+    (gen_random_uuid(), 'MERCHANT_USER', current_timestamp, current_timestamp);
 
 CREATE INDEX idx_payment_merchant_id ON payment_tbl(merchant_id);
 CREATE INDEX idx_payment_payment_ref ON payment_tbl(payment_ref);

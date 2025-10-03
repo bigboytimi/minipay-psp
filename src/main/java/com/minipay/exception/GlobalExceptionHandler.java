@@ -26,6 +26,7 @@ public class GlobalExceptionHandler {
         problem.setTitle("Invalid Request");
         problem.setType(URI.create(INVALID_REQUEST_URI));
         problem.setProperty("instance", request.getRequestURI());
+        problem.setProperty("correlationId", request.getAttribute("CORRELATION_ID"));
         return problem;
     }
 
@@ -35,6 +36,7 @@ public class GlobalExceptionHandler {
         problem.setTitle("Internal Server Error");
         problem.setType(URI.create(INTERNAL_ERROR));
         problem.setProperty("instance", request.getRequestURI());
+        problem.setProperty("correlationId", request.getAttribute("CORRELATION_ID"));
         return problem;
     }
 
@@ -51,7 +53,6 @@ public class GlobalExceptionHandler {
         problem.setDetail("One or more request fields are invalid.");
         problem.setType(URI.create(INVALID_REQUEST_URI));
         problem.setProperty("errors", errors);
-
         return ResponseEntity.badRequest().body(problem);
     }
 

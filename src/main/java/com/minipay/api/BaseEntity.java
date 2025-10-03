@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public abstract class BaseEntity {
     @Id
+    @Column(name = "id", unique = true)
     private String id;
 
     @Column(name = "created_at")

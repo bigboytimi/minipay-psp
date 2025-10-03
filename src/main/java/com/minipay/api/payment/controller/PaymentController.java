@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -37,6 +38,7 @@ public class PaymentController {
 
     @PostMapping(value = PAYMENTS)
     @Operation(summary = "Initiate Payment", description = "Initiate Payment")
+    @PreAuthorize("hasRole('MERCHANT_USER')")
     public ResponseEntity<ApiResponse<PaymentResponse>> payment(@RequestBody @Valid InitiatePaymentRequest request) {
         log.info("initiating payment...");
         PaymentResponse response = paymentService.payment(request);
@@ -45,14 +47,25 @@ public class PaymentController {
 
     @GetMapping(value = PAYMENT_WITH_REFERENCE)
     @Operation(summary = "Fetch Payment", description = "Fetch Payment details By reference")
+    @PreAuthorize("hasRole('MERCHANT_USER')")
     public ResponseEntity<ApiResponse<PaymentResponse>> fetch(@PathVariable String paymentRef) {
         log.info("fetching payment with reference {}...", paymentRef);
         PaymentResponse response = paymentService.fetch(paymentRef);
         return ApiResponse.success(response, "payment retrieved successfully");
     }
 
+    @PostMapping(value = PAYMENTS_APPROVE)
+    @Operation(summary = "Approve Payment", description = "Approve Payment")
+    public ResponseEntity<ApiResponse<PaymentResponse>> approve(@PathVariable String paymentRef, @RequestParam boolean success) {
+        log.info("initiating payment status update...");
+        PaymentResponse response = paymentService.approvePayment(paymentRef, success);
+        return ApiResponse.success(response, "payment status updated successfully");
+    }
+
+
     @GetMapping(value = PAYMENTS)
     @Operation(summary = "Fetch Payment", description = "Fetch Payment details by filters")
+    @PreAuthorize("hasRole('MERCHANT_USER')")
     public ResponseEntity<?> filter(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
                                                                 @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
                                                                 @RequestParam(required = false) String merchantId,

@@ -44,7 +44,7 @@ public class MerchantOnboardingController {
 
     @PostMapping(value = MERCHANTS_APPROVAL)
     @PreAuthorize("hasRole('CHECKER')")
-    @Operation(summary = "Update Merchant", description = "Updates merchant status")
+    @Operation(summary = "Update Merchant Status", description = "Updates merchant status")
     public ResponseEntity<ApiResponse<MerchantStatusUpdateResponse>> statusUpdate(@PathVariable String id, @RequestBody @Valid MerchantStatusUpdateRequest statusUpdateRequest) {
         log.info("approving merchant status update...");
         MerchantStatusUpdateResponse statusUpdateResponse = merchantService.statusUpdate(id, statusUpdateRequest);
@@ -53,6 +53,7 @@ public class MerchantOnboardingController {
 
     @PutMapping(value = MERCHANTS_WITH_ID)
     @Operation(summary = "Update Merchant", description = "Updates merchant details")
+    @PreAuthorize("hasRole('MAKER')")
     public ResponseEntity<ApiResponse<MerchantResponse>> update(@PathVariable String merchantId, @RequestBody @Valid MerchantUpdateRequest request) {
         log.info("initiating merchant update...");
         MerchantResponse response = merchantService.update(merchantId, request);
@@ -81,6 +82,7 @@ public class MerchantOnboardingController {
     }
 
     @PutMapping(value = MERCHANT_CHARGE_SETTINGS)
+    @PreAuthorize("hasRole('MAKER')")
     @Operation(summary = "Update Merchant Configuration", description = "Update Merchant Configuration")
     public ResponseEntity<ApiResponse<MerchantResponse>> upsertSettings(@PathVariable String merchantId, @RequestBody @Valid ChargeSettingRequest request) {
         log.info("upsert charge settings for merchant with id: {}...", merchantId);

@@ -8,6 +8,7 @@ import com.minipay.api.authentication.dto.response.LoginResponse;
 import com.minipay.api.authentication.dto.response.RegistrationResponse;
 import com.minipay.api.authentication.dto.response.TokenRefreshResponse;
 import com.minipay.api.authentication.service.AuthenticationService;
+import com.minipay.api.authentication.service.UserService;
 import com.minipay.common.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,13 +35,14 @@ import static com.minipay.api.ApiConstants.BASE_PATH;
 public class AuthController extends ApiConstants {
 
     private final AuthenticationService authenticationService;
+    private final UserService userService;
 
     @PostMapping(value = REGISTER)
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Register User", description = "Creates a new user")
     public ResponseEntity<ApiResponse<RegistrationResponse>> register(@RequestBody @Valid RegistrationRequest request){
         log.info("initiating user registration...");
-        RegistrationResponse response = authenticationService.register(request);
+        RegistrationResponse response = userService.register(request);
         return ApiResponse.success(response, "registration completed");
     }
 

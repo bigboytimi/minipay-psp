@@ -14,8 +14,6 @@ import com.minipay.api.payment.enums.PaymentStatus;
 import com.minipay.api.payment.repository.PaymentRepository;
 import com.minipay.api.payment.service.CallbackService;
 import com.minipay.api.payment.service.PaymentService;
-import com.minipay.api.settlement.domains.SettlementBatch;
-import com.minipay.common.PageResponse;
 import com.minipay.exception.ApiException;
 import com.minipay.utils.MoneyUtils;
 import com.minipay.utils.RandomGenerator;
@@ -26,7 +24,7 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 /**
  * @author timilehinolowookere
@@ -49,16 +47,46 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResponse payment(InitiatePaymentRequest request) {
+        // Check for idempotency by orderId
+        Optional<Payment> existing = paymentRepository.findByOrderId(request.getOrderId());
+        if (existing.isPresent()) {
+            return toResponse(existing.get());
+        }
 
         Merchant merchant = merchantService.getMerchantById(request.getCustomerId());
 
+        Payment payment = new Payment();
+        payment.setPaymentReference(RandomGenerator.generateRandomNumber(TWELVE_DIGITS));
+        payment.setOrderId(request.getOrderId());
+        payment.setCustomerId(request.getCustomerId());
+        payment.setAmount(MoneyUtils.scale(request.getAmount()));
+        payment.setMerchant(merchant);
+        payment.setCurrency(Currency.valueOf(request.getCurrency()));
+        payment.setPaymentChannel(PaymentChannel.valueOf(request.getChannel()));
+        payment.setPaymentStatus(PaymentStatus.PENDING);
+        payment.setCreatedAt(LocalDateTime.now());
+        payment.setUpdatedAt(LocalDateTime.now());
+
+        return toResponse(paymentRepository.save(payment));
+    }
+
+    @Override
+    public PaymentResponse approvePayment(String paymentRef, boolean success) {
+        Payment payment = paymentRepository.findByPaymentReference(paymentRef)
+                .orElseThrow(() -> new ApiException("Payment not found: " + paymentRef));
+
+        if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
+            throw new ApiException("Payment already approved or failed");
+        }
+
+        Merchant merchant = payment.getMerchant();
         ChargeSetting config = chargeService.getByMerchant(merchant);
 
         if (config == null) {
-            throw new ApiException("This customer ID has no existing charge configuration");
+            throw new ApiException("Merchant has no charge configuration");
         }
 
-        BigDecimal amount = MoneyUtils.scale(request.getAmount());
+        BigDecimal amount = payment.getAmount();
 
         BigDecimal msc;
         if (config.getUseFixedMSC()) {
@@ -72,45 +100,35 @@ public class PaymentServiceImpl implements PaymentService {
         BigDecimal vatAmount = msc.multiply(config.getVatRate());
 
         BigDecimal processorPart = amount.multiply(config.getPlatformProviderRate());
-        BigDecimal processorFee = (config.getPlatformProviderCap() != null) ? processorPart.min(config.getPlatformProviderCap()) : processorPart;
+        BigDecimal processorFee = (config.getPlatformProviderCap() != null)
+                ? processorPart.min(config.getPlatformProviderCap()) : processorPart;
 
         BigDecimal processorVat = processorFee.multiply(config.getVatRate());
-
         BigDecimal payableVat = vatAmount.subtract(processorVat);
 
         BigDecimal amountPayable = amount.subtract(msc.add(vatAmount).add(processorFee).add(processorVat));
 
-        String paymentRef = RandomGenerator.generateRandomNumber(TWELVE_DIGITS);
-
-        Payment payment = new Payment();
-
-        payment.setPaymentReference(paymentRef);
-        payment.setOrderId(request.getOrderId());
-        payment.setCustomerId(request.getCustomerId());
-        payment.setAmount(amount);
-        payment.setMerchant(merchant);
-        payment.setCurrency(Currency.valueOf(request.getCurrency()));
-        payment.setPaymentChannel(PaymentChannel.valueOf(request.getChannel()));
-        payment.setPaymentStatus(PaymentStatus.PENDING);
-        payment.setCustomerId(request.getCustomerId());
+        // Update payment
         payment.setMsc(MoneyUtils.scale(msc));
         payment.setVatAmount(MoneyUtils.scale(vatAmount));
         payment.setProcessorFee(MoneyUtils.scale(processorFee));
         payment.setProcessorVat(MoneyUtils.scale(processorVat));
         payment.setPayableVat(MoneyUtils.scale(payableVat));
         payment.setAmountPayable(MoneyUtils.scale(amountPayable));
-        payment.setCreatedAt(LocalDateTime.now());
+        if (success){
+            payment.setPaymentStatus(PaymentStatus.SUCCESS);
+        }else{
+            payment.setPaymentStatus(PaymentStatus.FAILED);
+        }
         payment.setUpdatedAt(LocalDateTime.now());
 
-        Payment savedPaymentDetails = paymentRepository.save(payment);
-
-        return toResponse(savedPaymentDetails);
+        return toResponse(paymentRepository.save(payment));
     }
 
     @Override
-    public void save(Payment payment) {
+    public Payment save(Payment payment) {
         try {
-            paymentRepository.save(payment);
+            return paymentRepository.save(payment);
         } catch (Exception e) {
             throw new ApiException(e.getMessage());
         }

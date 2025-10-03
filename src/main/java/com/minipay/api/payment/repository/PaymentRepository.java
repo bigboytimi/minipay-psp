@@ -18,6 +18,8 @@ public interface PaymentRepository extends JpaRepository<Payment, String> {
 
     List<Payment> findByPaymentStatus(PaymentStatus paymentStatus);
 
+    boolean existsByPaymentReference(String paymentReference);
+
     @Query("SELECT p FROM Payment p " +
             "WHERE (:startDate IS NULL OR p.createdAt >= :startDate) " +
             "AND   (:endDate IS NULL OR p.createdAt <= :endDate) " +
@@ -31,4 +33,7 @@ public interface PaymentRepository extends JpaRepository<Payment, String> {
             LocalDateTime from,
             LocalDateTime to
     );
+
+    Optional<Payment> findByOrderId(String orderId);
+
 }

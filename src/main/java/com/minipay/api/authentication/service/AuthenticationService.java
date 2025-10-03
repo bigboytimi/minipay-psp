@@ -17,6 +17,6 @@ import org.springframework.stereotype.Service;
 public interface AuthenticationService {
     LoginResponse login(LoginRequest request);
     TokenRefreshResponse refresh(TokenRefreshRequest request);
-    RegistrationResponse register(RegistrationRequest request);
+
 
 }
