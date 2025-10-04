@@ -37,7 +37,7 @@ graph TD
     C --> D[Services: AuthenticationService, MerchantService, PaymentService, SettlementService, ReportGenerationService]
     D --> E[Repositories: JPA Entities/DAOs]
     E --> F[PostgreSQL DB]
-    D -->|Simulate| G[Processor Simulator (Internal)]
+    D -->|Simulate| G["Processor Simulator (Internal)"]
     D -->|HMAC-Signed| H[Webhooks to Merchant Callback URLs]
     I[Swagger UI] --> C
     J[Tests: JUnit/Mockito] --> D
